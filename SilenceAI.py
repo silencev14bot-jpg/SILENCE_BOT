@@ -2045,8 +2045,9 @@ Commands.add_command("admin", admin_manage, permission="owner")
 
 
 # ============================================
-# MAIN LOOP
+# MAIN LOOP (CLI MODE — LOCAL ONLY)
 # ============================================
+
 def main():
     Boot.startup()
     Platform.deploy_cli()
@@ -2055,7 +2056,7 @@ def main():
 
     current_user = input("User ID: ").strip()
     print(f"Welcome {current_user} 🌹")
-    
+
     Memory.touch_user(current_user)
 
     while True:
@@ -2083,7 +2084,6 @@ def main():
             Learning.observe(processed["text"])
             Memory.store_short(processed["text"])
 
-        # Command handling
         if processed.get("intent") == "command":
             parts = processed["text"][1:].split()
 
@@ -2101,17 +2101,18 @@ def main():
         print(response)
 
 
-
 # ============================================
-# ENTRY POINT — CLI or PLATFORM BRIDGE
+# PLATFORM BRIDGE (WHATSAPP / TELEGRAM)
 # ============================================
 
-import sys  # ✅ REQUIRED — DO NOT REMOVE
+import os
+import sys
+import time  # REQUIRED TO KEEP WORKER ALIVE
 
 
 def process_external_message(user, text, platform="whatsapp"):
     Platform.set(platform)
-    
+
     Memory.touch_user(user)
 
     processed = Perception.process_input(text)
@@ -2121,7 +2122,7 @@ def process_external_message(user, text, platform="whatsapp"):
         Learning.observe(processed["text"])
         Memory.store_short(processed["text"])
 
-    if processed["intent"] == "command":
+    if processed.get("intent") == "command":
         parts = processed["text"][1:].split()
         if not parts:
             return "Invalid command 🤌"
@@ -2133,11 +2134,28 @@ def process_external_message(user, text, platform="whatsapp"):
     return ResponseGenerator.generate(processed)
 
 
+# ============================================
+# ENTRY POINT — SAFE FOR RAILWAY
+# ============================================
+
 if __name__ == "__main__":
-    # 🔹 If arguments are passed → PLATFORM MODE (WhatsApp / Telegram)
-    if len(sys.argv) >= 3:
+
+    # 🚀 RAILWAY MODE — NO INPUT(), KEEP ALIVE
+    if os.getenv("RAILWAY_ENVIRONMENT"):
+        print("🚀 SilenceAI running in Railway worker mode")
+
+        Boot.startup()
+        Platform.deploy_cli()
+        load_admins()
+        load_sessions()
+
+        while True:
+            time.sleep(60)
+
+    # 🔹 PLATFORM MESSAGE MODE
+    elif len(sys.argv) >= 3:
         user = sys.argv[1]
-        text = " ".join(sys.argv[2:])  # SAFE for spaces
+        text = " ".join(sys.argv[2:])
 
         try:
             output = process_external_message(user, text)
@@ -2145,6 +2163,6 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Core error: {e}")
 
-    # 🔹 Else → INTERACTIVE CLI MODE
+    # 🔹 LOCAL CLI MODE
     else:
         main()
