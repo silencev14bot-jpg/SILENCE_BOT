@@ -1,0 +1,34 @@
+{
+  "megalophobia": {
+    "type": "unknown",
+    "meaning": null,
+    "learned_from": "chat",
+    "count": 2,
+    "examples": [
+      "megalophobia",
+      "> I have megalophobia"
+    ],
+    "last_seen": 1766264236
+  },
+  "phobia?": {
+    "type": "unknown",
+    "meaning": null,
+    "learned_from": "chat",
+    "count": 3,
+    "examples": [
+      "what is your phobia?",
+      "> what is my phobia?"
+    ],
+    "last_seen": 1766264255
+  },
+  "70363855363": {
+    "type": "unknown",
+    "meaning": null,
+    "learned_from": "chat",
+    "count": 1,
+    "examples": [
+      "lair 70363855363"
+    ],
+    "last_seen": 1766265563
+  }
+}
